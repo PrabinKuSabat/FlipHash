@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "random": "c"
+    },
+    "cmake.sourceDirectory": "/workspaces/FlipHash/xxHash/cmake_unofficial"
+}
