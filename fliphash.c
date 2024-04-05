@@ -10,9 +10,10 @@
 #include <string.h>
 #include <pthread.h>
 #define ValueSize 64
-#define maxCacheSizeFliphash 640000
-#define maxQueueSize 10000
+#define maxCacheSizeFliphash 64000
+#define maxQueueSize 100
 #define keySizeFliphash 64
+#define cfile "cachefile.txt"
    //All the Values used for generating the keys should be of the size 64 bits.
 typedef struct{
    char **pointer;
@@ -46,6 +47,7 @@ int checFileSize(FILE*);
 
 pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+
 int main(int argc, const char* args[]){
    qptr q = (qptr)malloc(sizeof(queue));
    createQueue(q);
@@ -54,6 +56,7 @@ int main(int argc, const char* args[]){
    printf(" Please enter the total number of resources:\n");
    scanf(" %ld", &res->count);
    getc(stdin);
+   
    flipHashForFixedValues(argc, args, q, res);
    return 0;
 }
@@ -95,14 +98,12 @@ void executeFliphash(qptr q, resPtr res){
 
 void readFixedSizeInputsStd(qptr q){
    while(1){
-      printf(" Reading....");
       char* packet = (char *) malloc( sizeof(char) * (ValueSize+1));
       if(packet==NULL){
          perror(" Not enough Memory!! :: From flipHashForFixedValues");
          exit(1);
       }
       if(fgets(packet,(ValueSize+1), stdin) != NULL){
-         printf(" %s\n", packet);
          enque(packet,q);
       }
    }
@@ -114,8 +115,8 @@ void createQueue(qptr Q){
       perror(" Not Enough Storage To create the Queue!");
       exit(2);
    }
-   Q->frontPos=-1;
-   Q->endPos=-1;
+   Q->frontPos=0;
+   Q->endPos=0;
    return;
 }
 
@@ -124,25 +125,21 @@ void enque(char* input, qptr q){
    q->frontPos=++q->frontPos%maxQueueSize;
    while(q->frontPos==q->endPos);
    q->pointer[q->frontPos]=input;
-   if(q->endPos==-1)
-        q->endPos=0;
    pthread_mutex_unlock(&queue_mutex);
    
    return;
 }
 
 char* deque(qptr q){
-   if(q->endPos==q->frontPos || q->endPos == -1){
+   if(q->endPos==q->frontPos){
       return NULL;
    }
    pthread_mutex_lock(&queue_mutex);
-   char * temp = q->pointer[q->endPos++];
+
+   char * temp = q->pointer[++q->endPos];
    q->endPos =(q->endPos)%maxQueueSize;
-   if(q->endPos == q->frontPos){
-      q->frontPos = -1;
-      q->endPos = -1;
-   }
    printf(" frontPos:%d, endPos:%d", q->frontPos, q->endPos);
+
    pthread_mutex_unlock(&queue_mutex);
 
    return temp;
