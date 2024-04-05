@@ -11,7 +11,7 @@
 #include <pthread.h>
 #define ValueSize 64
 #define maxCacheSizeFliphash 64000
-#define maxQueueSize 100
+#define maxQueueSize 1000
 #define keySizeFliphash 64
 #define cfile "cachefile.txt"
    //All the Values used for generating the keys should be of the size 64 bits.
